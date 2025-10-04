@@ -1,39 +1,11 @@
 "use client";
 import { useAuth } from "@/context/auth-context";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Link from "next/link";
 import { CreditCard, Eye, ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function DashboardPage() {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace("/login");
-    }
-  }, [user, isLoading, router]);
-
-  if (isLoading || !user) {
-    return (
-        <div className="container mx-auto">
-            <div className="space-y-2 mb-8">
-                <h1 className="text-3xl font-bold tracking-tight font-headline">
-                Welcome...
-                </h1>
-                <p className="text-muted-foreground">
-                Loading your dashboard.
-                </p>
-            </div>
-            <div className="grid gap-6 md:grid-cols-2">
-                <Card><CardHeader><CardTitle>Loading...</CardTitle></CardHeader><CardContent><p>...</p></CardContent></Card>
-                <Card><CardHeader><CardTitle>Loading...</CardTitle></CardHeader><CardContent><p>...</p></CardContent></Card>
-            </div>
-        </div>
-    );
-  }
+  const { user } = useAuth();
 
   return (
     <div className="container mx-auto">
@@ -53,7 +25,10 @@ export default function DashboardPage() {
               <div className="p-3 rounded-md bg-primary/10">
                 <CreditCard className="w-6 h-6 text-primary" />
               </div>
-              <CardTitle>Create Digital Card</CardTitle>
+              <div className="flex-grow">
+                <CardTitle>Create Digital Card</CardTitle>
+                <CardDescription>Get your new ID card.</CardDescription>
+              </div>
             </CardHeader>
             <CardContent className="flex-grow">
               <p className="text-muted-foreground">
@@ -71,7 +46,10 @@ export default function DashboardPage() {
               <div className="p-3 rounded-md bg-primary/10">
                 <Eye className="w-6 h-6 text-primary" />
               </div>
-              <CardTitle>View Digital Card</CardTitle>
+              <div className="flex-grow">
+                <CardTitle>View Digital Card</CardTitle>
+                <CardDescription>Display your current ID.</CardDescription>
+              </div>
             </CardHeader>
             <CardContent className="flex-grow">
               <p className="text-muted-foreground">
