@@ -79,7 +79,7 @@ export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
           <div className="text-center text-muted-foreground p-4">
             <Camera className="mx-auto h-12 w-12 mb-2" />
             <p>Camera feed will appear here.</p>
-            {error && <p className="text-destructive-foreground mt-2">{error}</p>}
+            {error && <p className="text-destructive mt-2">{error}</p>}
           </div>
         )}
       </div>

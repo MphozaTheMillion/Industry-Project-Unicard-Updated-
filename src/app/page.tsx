@@ -41,7 +41,7 @@ export default function WelcomePage() {
         </div>
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tighter text-foreground sm:text-5xl md:text-6xl font-headline">
-            Welcome to CampusID
+            Welcome to Unicard
           </h1>
           <p className="max-w-[600px] text-muted-foreground md:text-xl">
             Your digital student card, always with you.
