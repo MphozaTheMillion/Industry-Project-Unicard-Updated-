@@ -1,12 +1,39 @@
-
 "use client";
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { CreditCard, Eye, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace("/login");
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user) {
+    return (
+        <div className="container mx-auto">
+            <div className="space-y-2 mb-8">
+                <h1 className="text-3xl font-bold tracking-tight font-headline">
+                Welcome...
+                </h1>
+                <p className="text-muted-foreground">
+                Loading your dashboard.
+                </p>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+                <Card><CardHeader><CardTitle>Loading...</CardTitle></CardHeader><CardContent><p>...</p></CardContent></Card>
+                <Card><CardHeader><CardTitle>Loading...</CardTitle></CardHeader><CardContent><p>...</p></CardContent></Card>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className="container mx-auto">
@@ -30,7 +57,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="flex-grow">
               <p className="text-muted-foreground">
-                Use your device&apos;s camera to take a professional photo and generate your new digital ID card.
+                Use your device's camera to take a professional photo and generate your new digital ID card.
               </p>
             </CardContent>
             <div className="p-6 pt-0 flex justify-end">
