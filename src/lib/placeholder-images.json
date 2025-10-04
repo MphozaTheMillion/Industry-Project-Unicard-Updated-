@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "student-card-logo",
+      "description": "logo of a student card",
+      "imageUrl": "https://images.unsplash.com/photo-1740593103600-60477ae903e8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjYXJkJTIwaWR8ZW58MHx8fHwxNzU5NTY5ODUzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "card id"
+    },
+    {
+      "id": "user-login-logo",
+      "description": "logo of a user logging in",
+      "imageUrl": "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx1c2VyJTIwYXZhdGFyfGVufDB8fHx8MTc1OTQ1NTkwM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "user avatar"
+    },
+    {
+      "id": "user-photo-placeholder",
+      "description": "placeholder for user photo",
+      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTk1MDY2MzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "campus-logo",
+      "description": "logo for the campus",
+      "imageUrl": "https://images.unsplash.com/photo-1653294274858-f7ed1c1794ab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx1bml2ZXJzaXR5JTIwYnVpbGRpbmd8ZW58MHx8fHwxNzU5NTY1ODkwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "university building"
+    }
+  ]
 }
