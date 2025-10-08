@@ -17,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import type { UserRole } from "@/context/auth-context";
 
 const baseSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required." }),
@@ -38,14 +39,22 @@ const staffSchema = baseSchema.extend({
   department: z.string().min(1, { message: "Department is required." }),
 });
 
-const formSchema = z.discriminatedUnion("role", [studentSchema, staffSchema]);
+const adminSchema = baseSchema.extend({
+  role: z.literal("admin"),
+});
+
+const technicianSchema = baseSchema.extend({
+  role: z.literal("technician"),
+});
+
+const formSchema = z.discriminatedUnion("role", [studentSchema, staffSchema, adminSchema, technicianSchema]);
 
 type FormData = z.infer<typeof formSchema>;
 
 export function RegisterForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [role, setRole] = useState<"student" | "staff">("student");
+  const [role, setRole] = useState<UserRole>("student");
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -55,7 +64,7 @@ export function RegisterForm() {
       lastName: "",
       email: "",
       password: "",
-      campusName: "",
+      campusName: "Main Campus",
       studentNumber: "",
       courseCode: "",
     },
@@ -70,16 +79,16 @@ export function RegisterForm() {
     router.push("/login");
   }
 
-  const handleRoleChange = (newRole: "student" | "staff") => {
+  const handleRoleChange = (newRole: UserRole) => {
     setRole(newRole);
     form.setValue("role", newRole);
-    // Reset fields that are not shared
-    if (newRole === 'staff') {
-        form.setValue('studentNumber' as any, undefined);
-        form.setValue('courseCode' as any, undefined);
-    } else {
-        form.setValue('department' as any, undefined);
-    }
+    form.reset({
+        ...form.getValues(),
+        role: newRole,
+        studentNumber: newRole === 'student' ? form.getValues().studentNumber : undefined,
+        courseCode: newRole === 'student' ? form.getValues().courseCode : undefined,
+        department: newRole === 'staff' ? form.getValues().department : undefined,
+    });
   }
 
   return (
@@ -93,9 +102,9 @@ export function RegisterForm() {
               <FormLabel>I am a...</FormLabel>
               <FormControl>
                 <RadioGroup
-                  onValueChange={(value: "student" | "staff") => handleRoleChange(value)}
+                  onValueChange={(value: UserRole) => handleRoleChange(value)}
                   defaultValue={field.value}
-                  className="flex space-x-4"
+                  className="grid grid-cols-2 gap-4"
                 >
                   <FormItem className="flex items-center space-x-2 space-y-0">
                     <FormControl>
@@ -108,6 +117,18 @@ export function RegisterForm() {
                       <RadioGroupItem value="staff" />
                     </FormControl>
                     <FormLabel className="font-normal">Campus Staff</FormLabel>
+                  </FormItem>
+                   <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="admin" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Administrator</FormLabel>
+                  </FormItem>
+                   <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="technician" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Technician</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>

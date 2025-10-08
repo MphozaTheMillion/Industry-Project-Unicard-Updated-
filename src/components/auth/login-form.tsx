@@ -21,10 +21,17 @@ import type { User } from "@/context/auth-context";
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(1, { message: "Password is required." }),
-  role: z.enum(["student", "staff"], {
+  role: z.enum(["student", "staff", "admin", "technician"], {
     required_error: "You need to select a role.",
   }),
 });
+
+const roleBasedInfo: Record<UserRole, Omit<User, 'email' | 'role' | 'campusName'>> = {
+    student: { firstName: 'Jane', lastName: 'Doe', initials: 'JD', studentNumber: 'ST123456', courseCode: 'CS101' },
+    staff: { firstName: 'John', lastName: 'Smith', initials: 'JS', department: 'Computer Science' },
+    admin: { firstName: 'Admin', lastName: 'User', initials: 'AU' },
+    technician: { firstName: 'Tech', lastName: 'Support', initials: 'TS' },
+};
 
 export function LoginForm() {
   const router = useRouter();
@@ -40,20 +47,22 @@ export function LoginForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Simulate login
+    const role = values.role as UserRole;
     const user: User = {
-      role: values.role as UserRole,
-      firstName: values.role === "student" ? "Jane" : "John",
-      lastName: "Doe",
-      initials: values.role === "student" ? "J." : "J.",
+      role,
       email: values.email,
-      studentNumber: values.role === "student" ? "ST123456" : undefined,
-      department: values.role === "staff" ? "Computer Science" : undefined,
-      courseCode: "CS101",
       campusName: "Main Campus",
+      ...roleBasedInfo[role]
     };
     login(user);
-    router.push("/dashboard");
+
+    if (role === 'admin') {
+        router.push("/admin");
+    } else if (role === 'technician') {
+        router.push('/technician');
+    } else {
+        router.push("/dashboard");
+    }
   }
 
   return (
@@ -69,7 +78,7 @@ export function LoginForm() {
                 <RadioGroup
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  className="flex space-x-4"
+                  className="grid grid-cols-2 gap-4"
                 >
                   <FormItem className="flex items-center space-x-2 space-y-0">
                     <FormControl>
@@ -82,6 +91,18 @@ export function LoginForm() {
                       <RadioGroupItem value="staff" />
                     </FormControl>
                     <FormLabel className="font-normal">Campus Staff</FormLabel>
+                  </FormItem>
+                   <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="admin" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Administrator</FormLabel>
+                  </FormItem>
+                   <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="technician" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Technician</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>

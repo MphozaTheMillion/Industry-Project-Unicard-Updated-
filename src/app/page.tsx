@@ -14,10 +14,10 @@ export default function WelcomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        router.replace("/dashboard");
-      }
+    if (!isLoading && user) {
+        if (user.role === 'admin') router.replace('/admin');
+        else if (user.role === 'technician') router.replace('/technician');
+        else router.replace("/dashboard");
     }
   }, [user, isLoading, router]);
 
@@ -40,7 +40,7 @@ export default function WelcomePage() {
         </div>
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tighter text-foreground sm:text-5xl md:text-6xl font-headline">
-            Welcome to CampusID
+            Welcome to Unicard
           </h1>
           <p className="max-w-[600px] text-muted-foreground md:text-xl">
             Your digital student and staff card, always with you.
@@ -54,7 +54,7 @@ export default function WelcomePage() {
         </Button>
       </div>
        <footer className="py-4">
-        <p className="text-xs text-muted-foreground">Powered by Firebase & Google AI</p>
+        <p className="text-xs text-muted-foreground"></p>
       </footer>
     </main>
   );

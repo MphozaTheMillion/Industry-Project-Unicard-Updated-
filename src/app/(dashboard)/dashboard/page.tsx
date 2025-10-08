@@ -3,9 +3,29 @@ import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Link from "next/link";
 import { CreditCard, Eye, ArrowRight } from "lucide-react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      router.replace('/admin');
+    } else if (user?.role === 'technician') {
+      router.replace('/technician');
+    }
+  }, [user, router]);
+
+  // Render dashboard for student and staff
+  if (user?.role !== 'student' && user?.role !== 'staff') {
+    return (
+        <div className="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center">
+            <p>Loading...</p>
+        </div>
+    );
+  }
 
   return (
     <div className="container mx-auto">
