@@ -25,9 +25,9 @@ const baseSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required." }).regex(/^[a-zA-Z]+$/, { message: "First name should only contain letters." }),
   lastName: z.string().min(1, { message: "Last name is required." }).regex(/^[a-zA-Z]+$/, { message: "Last name should only contain letters." }),
   initials: z.string().max(3).optional(),
-  email: z.string().email({ message: "Invalid email address." }),
+  email: z.string().min(1, { message: "Email is required." }).email({ message: "Invalid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }).regex(/[^a-zA-Z0-9]/, { message: "Password must contain at least one special character."}),
-  confirmPassword: z.string(),
+  confirmPassword: z.string().min(1, { message: "Please confirm your password." }),
   campusName: z.string().min(1, { message: "Campus name is required." }),
 });
 
