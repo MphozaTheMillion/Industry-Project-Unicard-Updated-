@@ -21,37 +21,31 @@ import { useState } from "react";
 import { useAuth, type User, type UserRole } from "@/context/auth-context";
 
 const baseSchema = z.object({
-  firstName: z.string().min(1, { message: "First name is required." }).regex(/^[a-zA-Z-.' ]+$/, { message: "First name can only contain letters."}),
-  lastName: z.string().min(1, { message: "Last name is required." }).regex(/^[a-zA-Z-.' ]+$/, { message: "Last name can only contain letters."}),
-  initials: z.string().max(3, { message: "Initials cannot be more than 3 characters."}).optional(),
+  firstName: z.string().min(1, { message: "First name is required." }),
+  lastName: z.string().min(1, { message: "Last name is required." }),
+  initials: z.string().max(3).optional(),
+  email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
   campusName: z.string().min(1, { message: "Campus name is required." }),
 });
 
 const studentSchema = baseSchema.extend({
   role: z.literal("student"),
-  studentNumber: z.string().length(9, { message: "Student number must be 9 digits." }).regex(/^\d{9}$/, { message: "Student number must only contain digits." }),
+  studentNumber: z.string().min(1, { message: "Student number is required." }),
   courseCode: z.string().min(1, { message: "Course code is required." }),
-  email: z.string().email({ message: "Invalid email address." }).regex(/^\d{9}@tut4life\.ac\.za$/, { message: "Student email must be a 9-digit number followed by @tut4life.ac.za"}),
-}).refine(data => data.email.startsWith(data.studentNumber), {
-    message: "Student number must match the number in the email address.",
-    path: ['email'],
 });
 
 const staffSchema = baseSchema.extend({
   role: z.literal("staff"),
   department: z.string().min(1, { message: "Department is required." }),
-  email: z.string().email({ message: "Invalid email address." }),
 });
 
 const adminSchema = baseSchema.extend({
   role: z.literal("admin"),
-  email: z.string().email({ message: "Invalid email address." }),
 });
 
 const technicianSchema = baseSchema.extend({
   role: z.literal("technician"),
-  email: z.string().email({ message: "Invalid email address." }),
 });
 
 const formSchema = z.discriminatedUnion("role", [studentSchema, staffSchema, adminSchema, technicianSchema]);
@@ -121,7 +115,6 @@ export function RegisterForm() {
     };
     
     form.reset(newDefaults);
-    form.setValue("role", newRole);
   }
 
 
@@ -136,7 +129,10 @@ export function RegisterForm() {
               <FormLabel>I am a...</FormLabel>
               <FormControl>
                 <RadioGroup
-                  onValueChange={(value) => handleRoleChange(value as UserRole)}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    handleRoleChange(value as UserRole);
+                  }}
                   defaultValue={field.value}
                   className="grid grid-cols-2 gap-4"
                 >
@@ -179,14 +175,11 @@ export function RegisterForm() {
         {role === 'student' && (
             <>
                 <FormField control={form.control} name="studentNumber" render={({ field }) => ( <FormItem><FormLabel>Student Number</FormLabel><FormControl><Input placeholder="123456789" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                 <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="123456789@tut4life.ac.za" {...field} /></FormControl><FormMessage /></FormItem> )} />
                 <FormField control={form.control} name="courseCode" render={({ field }) => ( <FormItem><FormLabel>Course Code</FormLabel><FormControl><Input placeholder="COS301" {...field} /></FormControl><FormMessage /></FormItem> )} />
             </>
         )}
         
-        {role !== 'student' && (
-            <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="name@example.com" {...field} /></FormControl><FormMessage /></FormItem> )} />
-        )}
+        <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="name@example.com" {...field} /></FormControl><FormMessage /></FormItem> )} />
         
         <FormField control={form.control} name="password" render={({ field }) => ( <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem> )} />
 
