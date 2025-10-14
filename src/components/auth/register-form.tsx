@@ -44,6 +44,7 @@ const staffSchema = baseSchema.extend({
 
 const adminSchema = baseSchema.extend({
   role: z.literal("admin"),
+  workCode: z.string().min(1, { message: "Work code is required." }),
 });
 
 const technicianSchema = baseSchema.extend({
@@ -133,7 +134,8 @@ export function RegisterForm() {
         campusName: "Main Campus",
         studentNumber: "",
         courseCode: "",
-        department: ""
+        department: "",
+        workCode: ""
     };
     
     form.reset(newDefaults);
@@ -267,6 +269,10 @@ export function RegisterForm() {
             </FormItem>
           )}
         />
+        
+        {role === 'admin' && (
+            <FormField control={form.control} name="workCode" render={({ field }) => ( <FormItem><FormLabel>Work Code</FormLabel><FormControl><Input placeholder="ADMIN123" {...field} /></FormControl><FormMessage /></FormItem> )} />
+        )}
 
         {role === 'staff' && (
              <FormField control={form.control} name="department" render={({ field }) => ( <FormItem><FormLabel>Department</FormLabel><FormControl><Input placeholder="School of Computing" {...field} /></FormControl><FormMessage /></FormItem> )} />
@@ -281,3 +287,5 @@ export function RegisterForm() {
     </Form>
   );
 }
+
+    
