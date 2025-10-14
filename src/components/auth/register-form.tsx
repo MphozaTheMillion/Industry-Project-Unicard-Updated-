@@ -139,6 +139,16 @@ export function RegisterForm() {
     form.reset(newDefaults);
   }
 
+  const getEmailPlaceholder = (role: UserRole) => {
+    switch (role) {
+      case 'student':
+        return 'studentnumber@tut4life.ac.za';
+      case 'staff':
+        return 'name@outlook.com';
+      default:
+        return 'name@example.com';
+    }
+  }
 
   return (
     <Form {...form}>
@@ -201,7 +211,7 @@ export function RegisterForm() {
             </>
         )}
         
-        <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder={role === 'student' ? "studentnumber@tut4life.ac.za" : "name@example.com"} {...field} /></FormControl><FormMessage /></FormItem> )} />
+        <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder={getEmailPlaceholder(role)} {...field} /></FormControl><FormMessage /></FormItem> )} />
         
         <FormField
           control={form.control}
