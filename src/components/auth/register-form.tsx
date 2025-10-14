@@ -108,7 +108,7 @@ export function RegisterForm() {
     setRole(newRole);
     
     // Create a fresh set of default values for the new role
-    const newDefaults = {
+    const newDefaults: any = {
         role: newRole,
         firstName: "",
         lastName: "",
@@ -119,24 +119,8 @@ export function RegisterForm() {
         courseCode: "",
         department: ""
     };
-
-    if (newRole === 'student') {
-        form.reset(newDefaults);
-    } else if (newRole === 'staff') {
-        form.reset({
-            ...newDefaults,
-            studentNumber: undefined,
-            courseCode: undefined
-        });
-    } else {
-         form.reset({
-            ...newDefaults,
-            studentNumber: undefined,
-            courseCode: undefined,
-            department: undefined
-        });
-    }
-
+    
+    form.reset(newDefaults);
     form.setValue("role", newRole);
   }
 
