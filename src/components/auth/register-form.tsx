@@ -152,7 +152,7 @@ export function RegisterForm() {
               <FormLabel>I am a...</FormLabel>
               <FormControl>
                 <RadioGroup
-                  onValueChange={(value: UserRole) => handleRoleChange(value)}
+                  onValueChange={(value) => handleRoleChange(value as UserRole)}
                   defaultValue={field.value}
                   className="grid grid-cols-2 gap-4"
                 >
