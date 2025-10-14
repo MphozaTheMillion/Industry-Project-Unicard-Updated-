@@ -103,6 +103,9 @@ export function LoginForm() {
         return 'studentnumber@tut4life.ac.za';
       case 'staff':
         return 'name@outlook.com';
+      case 'admin':
+      case 'technician':
+        return 'name@example.com';
       default:
         return 'name@example.com';
     }
