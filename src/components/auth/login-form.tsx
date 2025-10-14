@@ -102,8 +102,8 @@ export function LoginForm() {
       case 'student':
         return 'studentnumber@tut4life.ac.za';
       case 'staff':
-        return 'name@outlook.com';
       case 'admin':
+        return 'name@outlook.com';
       case 'technician':
         return 'name@example.com';
       default:
