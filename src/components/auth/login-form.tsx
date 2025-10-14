@@ -20,10 +20,21 @@ import type { User } from "@/context/auth-context";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(1, { message: "Password is required." }),
+  password: z.string().min(7, { message: "Password must be at least 7 characters." }).regex(/[^a-zA-Z0-9]/, { message: "Password must contain at least one special character."}),
   role: z.enum(["student", "staff", "admin", "technician"], {
     required_error: "You need to select a role.",
   }),
+}).superRefine((data, ctx) => {
+    if (data.role === 'student') {
+        const studentEmailRegex = /^\d{9}@tut4life\.ac\.za$/;
+        if (!studentEmailRegex.test(data.email)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['email'],
+                message: 'Student email must be a 9-digit number followed by @tut4life.ac.za',
+            });
+        }
+    }
 });
 
 const roleBasedInfo: Record<UserRole, Omit<User, 'email' | 'role' | 'campusName'>> = {
