@@ -26,6 +26,7 @@ const formSchema = z.object({
   role: z.enum(["student", "staff", "admin", "technician"], {
     required_error: "You need to select a role.",
   }),
+  workCode: z.string().optional(),
 }).superRefine((data, ctx) => {
     if (data.role === 'student') {
         const studentEmailRegex = /^\d{9}@tut4life\.ac\.za$/;
@@ -36,24 +37,27 @@ const formSchema = z.object({
                 message: 'Student email must be a 9-digit number followed by @tut4life.ac.za',
             });
         }
-    } else if (data.role === 'staff') {
+    } else if (data.role === 'staff' || data.role === 'admin') {
         const staffEmailRegex = /@outlook\.com$/;
         if (!staffEmailRegex.test(data.email)) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['email'],
-                message: 'Campus Staff email must end with @outlook.com',
+                message: `Campus ${data.role} email must end with @outlook.com`,
             });
         }
     }
+    if (data.role === 'admin') {
+      if (!data.workCode || data.workCode.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["workCode"],
+          message: "Work code is required for administrators.",
+        });
+      }
+    }
 });
 
-const roleBasedInfo: Record<UserRole, Omit<User, 'email' | 'role' | 'campusName'>> = {
-    student: { firstName: 'Jane', lastName: 'Doe', initials: 'JD', studentNumber: 'ST123456', courseCode: 'CS101' },
-    staff: { firstName: 'John', lastName: 'Smith', initials: 'JS', department: 'Computer Science' },
-    admin: { firstName: 'Admin', lastName: 'User', initials: 'AU' },
-    technician: { firstName: 'Tech', lastName: 'Support', initials: 'TS' },
-};
 
 export function LoginForm() {
   const router = useRouter();
@@ -66,6 +70,7 @@ export function LoginForm() {
       email: "",
       password: "",
       role: "student",
+      workCode: "",
     },
   });
 
@@ -76,7 +81,8 @@ export function LoginForm() {
     
     const success = login({
       role,
-      email: values.email
+      email: values.email,
+      workCode: values.workCode,
     });
 
     if (success) {
@@ -91,9 +97,8 @@ export function LoginForm() {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Account not found. Please sign up to create an account.",
+        description: "Invalid credentials or account not found. Please check your details or sign up.",
       })
-      router.push("/register");
     }
   }
   
@@ -182,6 +187,21 @@ export function LoginForm() {
             </FormItem>
           )}
         />
+        {role === 'admin' && (
+          <FormField
+            control={form.control}
+            name="workCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Work Code</FormLabel>
+                <FormControl>
+                  <Input placeholder="ADMIN123" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <Button type="submit" className="w-full" size="lg">
           Login
         </Button>

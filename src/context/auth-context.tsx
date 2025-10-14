@@ -1,3 +1,4 @@
+
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
@@ -15,12 +16,19 @@ export interface User {
   courseCode?: string;
   campusName: string;
   lastLogin?: string;
+  workCode?: string;
+}
+
+interface LoginCredentials {
+  email: string;
+  role: UserRole;
+  workCode?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   cardImage: string | null;
-  login: (credentials: { email: string; role: UserRole }) => boolean;
+  login: (credentials: LoginCredentials) => boolean;
   logout: () => void;
   register: (newUser: Omit<User, 'lastLogin'>) => boolean;
   setCardImage: (image: string | null) => void;
@@ -33,7 +41,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const mockUsers: User[] = [
     { role: 'student', firstName: 'Jane', lastName: 'Doe', initials: 'JD', email: '123456789@tut4life.ac.za', studentNumber: 'ST123456', courseCode: 'CS101', campusName: 'Main Campus', lastLogin: new Date().toISOString() },
     { role: 'staff', firstName: 'John', lastName: 'Smith', initials: 'JS', email: 'john.smith@example.com', department: 'Computer Science', campusName: 'Main Campus', lastLogin: new Date(Date.now() - 86400000).toISOString() },
-    { role: 'admin', firstName: 'Admin', lastName: 'User', initials: 'AU', email: 'admin@example.com', campusName: 'Main Campus', lastLogin: new Date().toISOString() },
+    { role: 'admin', firstName: 'Admin', lastName: 'User', initials: 'AU', email: 'admin@example.com', campusName: 'Main Campus', workCode: 'ADMIN123', lastLogin: new Date().toISOString() },
     { role: 'technician', firstName: 'Tech', lastName: 'Support', initials: 'TS', email: 'tech@example.com', campusName: 'Main Campus', lastLogin: new Date(Date.now() - 172800000).toISOString() },
 ];
 
@@ -70,8 +78,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (credentials: { email: string; role: UserRole }) => {
-    const foundUser = users.find(u => u.email === credentials.email && u.role === credentials.role);
+  const login = (credentials: LoginCredentials) => {
+    const foundUser = users.find(u => {
+      if (u.email !== credentials.email || u.role !== credentials.role) {
+        return false;
+      }
+      if (u.role === 'admin') {
+        return u.workCode === credentials.workCode;
+      }
+      return true;
+    });
     
     if (foundUser) {
       const userWithLogin = { ...foundUser, lastLogin: new Date().toISOString()};
@@ -100,8 +116,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (userExists) {
       return false; // User already exists
     }
+    
+    let userToRegister: User = newUser;
+    if (newUser.role === 'admin') {
+      const { workCode } = newUser;
+      userToRegister = { ...newUser, workCode };
+    }
 
-    const updatedUsers = [...users, newUser];
+
+    const updatedUsers = [...users, userToRegister];
     setUsers(updatedUsers);
     localStorage.setItem("campusIdUsers", JSON.stringify(updatedUsers));
     return true;
