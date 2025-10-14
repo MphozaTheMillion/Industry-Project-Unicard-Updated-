@@ -33,7 +33,28 @@ const studentSchema = baseSchema.extend({
   role: z.literal("student"),
   studentNumber: z.string().min(1, { message: "Student number is required." }),
   courseCode: z.string().min(1, { message: "Course code is required." }),
+}).superRefine((data, ctx) => {
+    const studentEmailRegex = /^(\d{9})@tut4life\.ac\.za$/;
+    const match = data.email.match(studentEmailRegex);
+
+    if (!match) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['email'],
+            message: 'Student email must be a 9-digit number followed by @tut4life.ac.za',
+        });
+        return;
+    }
+
+    if (match[1] !== data.studentNumber) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['email'],
+            message: 'The email must contain the same student number entered below.',
+        });
+    }
 });
+
 
 const staffSchema = baseSchema.extend({
   role: z.literal("staff"),
