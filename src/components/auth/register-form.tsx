@@ -21,8 +21,8 @@ import { useState } from "react";
 import { useAuth, type User, type UserRole } from "@/context/auth-context";
 
 const baseSchema = z.object({
-  firstName: z.string().min(1, { message: "First name is required." }),
-  lastName: z.string().min(1, { message: "Last name is required." }),
+  firstName: z.string().min(1, { message: "First name is required." }).regex(/^[a-zA-Z]+$/, { message: "First name should only contain letters." }),
+  lastName: z.string().min(1, { message: "Last name is required." }).regex(/^[a-zA-Z]+$/, { message: "Last name should only contain letters." }),
   initials: z.string().max(3).optional(),
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }).regex(/[^a-zA-Z0-9]/, { message: "Password must contain at least one special character."}),
