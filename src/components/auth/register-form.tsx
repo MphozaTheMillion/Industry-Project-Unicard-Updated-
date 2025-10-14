@@ -179,7 +179,7 @@ export function RegisterForm() {
             </>
         )}
         
-        <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="name@example.com" {...field} /></FormControl><FormMessage /></FormItem> )} />
+        <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder={role === 'student' ? "studentnumber@tut4life.ac.za" : "name@example.com"} {...field} /></FormControl><FormMessage /></FormItem> )} />
         
         <FormField control={form.control} name="password" render={({ field }) => ( <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem> )} />
 
