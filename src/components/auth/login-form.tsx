@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,6 +59,8 @@ export function LoginForm() {
       role: "student",
     },
   });
+
+  const role = form.watch("role");
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const role = values.role as UserRole;
@@ -137,7 +140,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="name@example.com" {...field} />
+                <Input placeholder={role === 'student' ? "studentnumber@tut4life.ac.za" : "name@example.com"} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
