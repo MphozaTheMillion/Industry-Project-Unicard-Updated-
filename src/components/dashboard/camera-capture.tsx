@@ -1,52 +1,49 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface CameraCaptureProps {
   onPictureTaken: (image: string) => void;
 }
 
 export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
 
-  const startCamera = useCallback(async () => {
-    setError(null);
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-    }
-    try {
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
-      });
-      setStream(newStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = newStream;
-      }
-    } catch (err) {
-      console.error("Error accessing camera:", err);
-      let message = "Could not access the camera. Please check permissions.";
-      if (err instanceof DOMException) {
-        if (err.name === "NotAllowedError") {
-          message = "Camera access was denied. Please enable it in your browser settings.";
-        } else if (err.name === "NotFoundError") {
-          message = "No camera found on this device.";
+  useEffect(() => {
+    const getCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasCameraPermission(true);
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
         }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Access Denied',
+          description: 'Please enable camera permissions in your browser settings to use this app.',
+        });
       }
-      setError(message);
-      toast({
-        variant: "destructive",
-        title: "Camera Error",
-        description: message,
-      });
+    };
+
+    getCameraPermission();
+
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+      }
     }
-  }, [stream, toast]);
+  }, [toast]);
 
   const takePicture = () => {
     if (videoRef.current && canvasRef.current) {
@@ -56,45 +53,52 @@ export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
       canvas.height = video.videoHeight;
       const context = canvas.getContext("2d");
       if (context) {
+        // Flip the image horizontally for a mirror effect
+        context.translate(video.videoWidth, 0);
+        context.scale(-1, 1);
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         const dataUrl = canvas.toDataURL("image/jpeg");
         onPictureTaken(dataUrl);
-        stream?.getTracks().forEach((track) => track.stop());
-        setStream(null);
+
+        if (video.srcObject) {
+          (video.srcObject as MediaStream).getTracks().forEach((track) => track.stop());
+        }
       }
     }
   };
 
   return (
     <div className="flex flex-col items-center gap-4 p-4 border rounded-lg bg-background">
-      <div className="w-full max-w-md aspect-video bg-muted rounded-md overflow-hidden flex items-center justify-center">
-        {stream ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="text-center text-muted-foreground p-4">
-            <Camera className="mx-auto h-12 w-12 mb-2" />
-            <p>Camera feed will appear here.</p>
-            {error && <p className="text-destructive mt-2">{error}</p>}
-          </div>
+      <div className="w-full max-w-md aspect-video bg-muted rounded-md overflow-hidden flex items-center justify-center relative">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover transform scale-x-[-1]"
+        />
+        {hasCameraPermission === false && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 p-4">
+                <Alert variant="destructive">
+                    <AlertTitle>Camera Access Required</AlertTitle>
+                    <AlertDescription>
+                        Please allow camera access to use this feature. Refresh the page after granting permissions.
+                    </AlertDescription>
+                </Alert>
+            </div>
+        )}
+        {hasCameraPermission === null && (
+             <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 p-4 text-center text-muted-foreground">
+                <Camera className="mx-auto h-12 w-12 mb-2" />
+                <p>Requesting camera access...</p>
+             </div>
         )}
       </div>
       <canvas ref={canvasRef} style={{ display: "none" }} />
-      {stream ? (
-        <Button onClick={takePicture} size="lg" className="w-full max-w-md">
+        <Button onClick={takePicture} size="lg" className="w-full max-w-md" disabled={!hasCameraPermission}>
           <Camera className="mr-2 h-5 w-5" />
           Take Picture
         </Button>
-      ) : (
-        <Button onClick={startCamera} size="lg" className="w-full max-w-md">
-          <RefreshCw className="mr-2 h-5 w-5" />
-          {error ? 'Try Again' : 'Start Camera'}
-        </Button>
-      )}
        <p className="text-xs text-muted-foreground text-center max-w-md">Please take a professional, forward-facing photo for your ID card.</p>
     </div>
   );
