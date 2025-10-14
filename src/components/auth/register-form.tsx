@@ -55,7 +55,7 @@ type FormData = z.infer<typeof formSchema>;
 export function RegisterForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const { register } = useAuth();
+  const { register, users } = useAuth();
   const [role, setRole] = useState<UserRole>("student");
 
   const form = useForm<FormData>({
@@ -73,6 +73,17 @@ export function RegisterForm() {
   });
   
   function onSubmit(values: FormData) {
+    if (values.role === 'student') {
+      const studentNumberExists = users.some(u => u.role === 'student' && u.studentNumber === values.studentNumber);
+      if (studentNumberExists) {
+        form.setError("studentNumber", {
+            type: "manual",
+            message: "This student number has already been used to create an account.",
+        });
+        return;
+      }
+    }
+
     // We can omit password from the user object we store
     const { password, ...newUser } = values;
 
