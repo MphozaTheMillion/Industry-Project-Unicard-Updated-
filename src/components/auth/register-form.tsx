@@ -144,6 +144,7 @@ export function RegisterForm() {
       case 'student':
         return 'studentnumber@tut4life.ac.za';
       case 'staff':
+      case 'admin':
         return 'name@outlook.com';
       default:
         return 'name@example.com';
