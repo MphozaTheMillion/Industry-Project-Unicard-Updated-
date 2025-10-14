@@ -28,9 +28,6 @@ const baseSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters." }).regex(/[^a-zA-Z0-9]/, { message: "Password must contain at least one special character."}),
   confirmPassword: z.string(),
   campusName: z.string().min(1, { message: "Campus name is required." }),
-}).refine(data => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
 });
 
 const studentSchema = baseSchema.extend({
@@ -52,7 +49,12 @@ const technicianSchema = baseSchema.extend({
   role: z.literal("technician"),
 });
 
-const formSchema = z.discriminatedUnion("role", [studentSchema, staffSchema, adminSchema, technicianSchema]);
+const formSchema = z.discriminatedUnion("role", [studentSchema, staffSchema, adminSchema, technicianSchema])
+  .refine(data => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+});
+
 
 type FormData = z.infer<typeof formSchema>;
 
