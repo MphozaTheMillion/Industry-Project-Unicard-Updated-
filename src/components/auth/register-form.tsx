@@ -26,7 +26,11 @@ const baseSchema = z.object({
   initials: z.string().max(3).optional(),
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }).regex(/[^a-zA-Z0-9]/, { message: "Password must contain at least one special character."}),
+  confirmPassword: z.string(),
   campusName: z.string().min(1, { message: "Campus name is required." }),
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
 });
 
 const studentSchema = baseSchema.extend({
@@ -66,6 +70,7 @@ export function RegisterForm() {
       lastName: "",
       email: "",
       password: "",
+      confirmPassword: "",
       campusName: "Main Campus",
       studentNumber: "",
       courseCode: "",
@@ -85,7 +90,7 @@ export function RegisterForm() {
     }
 
     // We can omit password from the user object we store
-    const { password, ...newUser } = values;
+    const { password, confirmPassword, ...newUser } = values;
 
     // Generate initials if not provided
     if (!newUser.initials) {
@@ -119,6 +124,7 @@ export function RegisterForm() {
         lastName: "",
         email: "",
         password: "",
+        confirmPassword: "",
         campusName: "Main Campus",
         studentNumber: "",
         courseCode: "",
@@ -193,6 +199,8 @@ export function RegisterForm() {
         <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder={role === 'student' ? "studentnumber@tut4life.ac.za" : "name@example.com"} {...field} /></FormControl><FormMessage /></FormItem> )} />
         
         <FormField control={form.control} name="password" render={({ field }) => ( <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem> )} />
+
+        <FormField control={form.control} name="confirmPassword" render={({ field }) => ( <FormItem><FormLabel>Confirm Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem> )} />
 
         {role === 'staff' && (
              <FormField control={form.control} name="department" render={({ field }) => ( <FormItem><FormLabel>Department</FormLabel><FormControl><Input placeholder="School of Computing" {...field} /></FormControl><FormMessage /></FormItem> )} />
