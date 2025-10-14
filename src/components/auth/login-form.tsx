@@ -60,7 +60,7 @@ export function LoginForm() {
     },
   });
 
-  const role = form.watch("role");
+  const role = form.watch("role") as UserRole;
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const role = values.role as UserRole;
@@ -85,6 +85,17 @@ export function LoginForm() {
         description: "Account not found. Please sign up to create an account.",
       })
       router.push("/register");
+    }
+  }
+  
+  const getEmailPlaceholder = (role: UserRole) => {
+    switch (role) {
+      case 'student':
+        return 'studentnumber@tut4life.ac.za';
+      case 'staff':
+        return 'name@outlook.com';
+      default:
+        return 'name@example.com';
     }
   }
 
@@ -140,7 +151,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder={role === 'student' ? "studentnumber@tut4life.ac.za" : "name@example.com"} {...field} />
+                <Input placeholder={getEmailPlaceholder(role)} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
