@@ -17,7 +17,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import type { UserRole } from "@/context/auth-context";
+import { useAuth, type User, type UserRole } from "@/context/auth-context";
 
 const baseSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required." }),
@@ -54,6 +54,7 @@ type FormData = z.infer<typeof formSchema>;
 export function RegisterForm() {
   const router = useRouter();
   const { toast } = useToast();
+  const { register } = useAuth();
   const [role, setRole] = useState<UserRole>("student");
 
   const form = useForm<FormData>({
@@ -71,12 +72,29 @@ export function RegisterForm() {
   });
   
   function onSubmit(values: FormData) {
-    console.log(values);
-    toast({
-      title: "Account Created!",
-      description: "You have successfully registered. Please log in.",
-    });
-    router.push("/login");
+    // We can omit password from the user object we store
+    const { password, ...newUser } = values;
+
+    // Generate initials if not provided
+    if (!newUser.initials) {
+      newUser.initials = `${newUser.firstName?.[0] ?? ''}${newUser.lastName?.[0] ?? ''}`.toUpperCase();
+    }
+    
+    const success = register(newUser as Omit<User, 'lastLogin'>);
+
+    if (success) {
+      toast({
+        title: "Account Created!",
+        description: "You have successfully registered. Please log in.",
+      });
+      router.push("/login");
+    } else {
+       toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: "An account with this email already exists.",
+      });
+    }
   }
 
   const handleRoleChange = (newRole: UserRole) => {
