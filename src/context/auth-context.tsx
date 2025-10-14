@@ -20,7 +20,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   cardImage: string | null;
-  login: (user: User) => void;
+  login: (credentials: { email: string; role: UserRole }) => boolean;
   logout: () => void;
   setCardImage: (image: string | null) => void;
   isLoading: boolean;
@@ -30,7 +30,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const mockUsers: User[] = [
-    { role: 'student', firstName: 'Jane', lastName: 'Doe', initials: 'JD', email: 'jane.doe@example.com', studentNumber: 'ST123456', courseCode: 'CS101', campusName: 'Main Campus', lastLogin: new Date().toISOString() },
+    { role: 'student', firstName: 'Jane', lastName: 'Doe', initials: 'JD', email: '123456789@tut4life.ac.za', studentNumber: 'ST123456', courseCode: 'CS101', campusName: 'Main Campus', lastLogin: new Date().toISOString() },
     { role: 'staff', firstName: 'John', lastName: 'Smith', initials: 'JS', email: 'john.smith@example.com', department: 'Computer Science', campusName: 'Main Campus', lastLogin: new Date(Date.now() - 86400000).toISOString() },
     { role: 'admin', firstName: 'Admin', lastName: 'User', initials: 'AU', email: 'admin@example.com', campusName: 'Main Campus', lastLogin: new Date().toISOString() },
     { role: 'technician', firstName: 'Tech', lastName: 'Support', initials: 'TS', email: 'tech@example.com', campusName: 'Main Campus', lastLogin: new Date(Date.now() - 172800000).toISOString() },
@@ -60,13 +60,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (userData: User) => {
-    const userWithLogin = { ...userData, lastLogin: new Date().toISOString()};
-    setUser(userWithLogin);
-    localStorage.setItem("campusIdUser", JSON.stringify(userWithLogin));
-
-    // Update last login for mock user
-    setUsers(prevUsers => prevUsers.map(u => u.email === userData.email ? userWithLogin : u));
+  const login = (credentials: { email: string; role: UserRole }) => {
+    const foundUser = users.find(u => u.email === credentials.email && u.role === credentials.role);
+    
+    if (foundUser) {
+      const userWithLogin = { ...foundUser, lastLogin: new Date().toISOString()};
+      setUser(userWithLogin);
+      localStorage.setItem("campusIdUser", JSON.stringify(userWithLogin));
+      setUsers(prevUsers => prevUsers.map(u => u.email === foundUser.email ? userWithLogin : u));
+      return true;
+    }
+    
+    return false;
   };
 
   const logout = () => {

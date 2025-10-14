@@ -17,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth, type UserRole } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 import type { User } from "@/context/auth-context";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -47,6 +48,7 @@ const roleBasedInfo: Record<UserRole, Omit<User, 'email' | 'role' | 'campusName'
 export function LoginForm() {
   const router = useRouter();
   const { login } = useAuth();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,20 +61,27 @@ export function LoginForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const role = values.role as UserRole;
-    const user: User = {
+    
+    const success = login({
       role,
-      email: values.email,
-      campusName: "Main Campus",
-      ...roleBasedInfo[role]
-    };
-    login(user);
+      email: values.email
+    });
 
-    if (role === 'admin') {
-        router.push("/admin");
-    } else if (role === 'technician') {
-        router.push('/technician');
+    if (success) {
+      if (role === 'admin') {
+          router.push("/admin");
+      } else if (role === 'technician') {
+          router.push('/technician');
+      } else {
+          router.push("/dashboard");
+      }
     } else {
-        router.push("/dashboard");
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Account not found. Please sign up to create an account.",
+      })
+      router.push("/register");
     }
   }
 
