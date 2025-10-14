@@ -36,6 +36,15 @@ const formSchema = z.object({
                 message: 'Student email must be a 9-digit number followed by @tut4life.ac.za',
             });
         }
+    } else if (data.role === 'staff') {
+        const staffEmailRegex = /@outlook\.com$/;
+        if (!staffEmailRegex.test(data.email)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['email'],
+                message: 'Campus Staff email must end with @outlook.com',
+            });
+        }
     }
 });
 
