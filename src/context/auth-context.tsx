@@ -40,9 +40,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const mockUsers: User[] = [
     { role: 'student', firstName: 'Jane', lastName: 'Doe', initials: 'JD', email: '123456789@tut4life.ac.za', studentNumber: 'ST123456', courseCode: 'CS101', campusName: 'Main Campus', lastLogin: new Date().toISOString() },
-    { role: 'staff', firstName: 'John', lastName: 'Smith', initials: 'JS', email: 'john.smith@example.com', department: 'Computer Science', campusName: 'Main Campus', lastLogin: new Date(Date.now() - 86400000).toISOString() },
-    { role: 'admin', firstName: 'Admin', lastName: 'User', initials: 'AU', email: 'admin@example.com', campusName: 'Main Campus', workCode: 'ADMIN123', lastLogin: new Date().toISOString() },
-    { role: 'technician', firstName: 'Tech', lastName: 'Support', initials: 'TS', email: 'tech@example.com', campusName: 'Main Campus', lastLogin: new Date(Date.now() - 172800000).toISOString() },
+    { role: 'staff', firstName: 'John', lastName: 'Smith', initials: 'JS', email: 'john.smith@outlook.com', department: 'Computer Science', campusName: 'Main Campus', lastLogin: new Date(Date.now() - 86400000).toISOString() },
+    { role: 'admin', firstName: 'Admin', lastName: 'User', initials: 'AU', email: 'admin@outlook.com', campusName: 'Main Campus', workCode: 'ADMIN123', lastLogin: new Date().toISOString() },
+    { role: 'technician', firstName: 'Tech', lastName: 'Support', initials: 'TS', email: 'tech@outlook.com', campusName: 'Main Campus', workCode: 'TECH123', lastLogin: new Date(Date.now() - 172800000).toISOString() },
 ];
 
 
@@ -59,7 +59,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedCardImage = localStorage.getItem("campusIdCardImage");
       
       if (storedUsers) {
-        setUsers(JSON.parse(storedUsers));
+        const parsedUsers = JSON.parse(storedUsers);
+        // Add mock technician if not present
+        if (!parsedUsers.some((u: User) => u.role === 'technician')) {
+            const allUsers = [...parsedUsers, ...mockUsers.filter(mu => !parsedUsers.some((pu: User) => pu.email === mu.email))];
+            setUsers(allUsers);
+        } else {
+           setUsers(parsedUsers);
+        }
       } else {
         setUsers(mockUsers);
       }
@@ -83,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (u.email !== credentials.email || u.role !== credentials.role) {
         return false;
       }
-      if (u.role === 'admin') {
+      if (u.role === 'admin' || u.role === 'technician') {
         return u.workCode === credentials.workCode;
       }
       return true;
@@ -118,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     let userToRegister: User = newUser;
-    if (newUser.role === 'admin') {
+    if (newUser.role === 'admin' || newUser.role === 'technician') {
       const { workCode } = newUser;
       userToRegister = { ...newUser, workCode };
     }

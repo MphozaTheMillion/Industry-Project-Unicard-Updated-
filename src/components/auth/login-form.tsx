@@ -37,7 +37,7 @@ const formSchema = z.object({
                 message: 'Student email must be a 9-digit number followed by @tut4life.ac.za',
             });
         }
-    } else if (data.role === 'staff' || data.role === 'admin') {
+    } else if (data.role === 'staff' || data.role === 'admin' || data.role === 'technician') {
         const staffEmailRegex = /@outlook\.com$/;
         if (!staffEmailRegex.test(data.email)) {
             ctx.addIssue({
@@ -47,12 +47,12 @@ const formSchema = z.object({
             });
         }
     }
-    if (data.role === 'admin') {
+    if (data.role === 'admin' || data.role === 'technician') {
       if (!data.workCode || data.workCode.length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["workCode"],
-          message: "Work code is required for administrators.",
+          message: `Work code is required for ${data.role}.`,
         });
       }
     }
@@ -108,11 +108,21 @@ export function LoginForm() {
         return 'studentnumber@tut4life.ac.za';
       case 'staff':
       case 'admin':
-        return 'name@outlook.com';
       case 'technician':
-        return 'name@example.com';
+        return 'name@outlook.com';
       default:
         return 'name@example.com';
+    }
+  }
+
+  const getWorkCodePlaceholder = (role: UserRole) => {
+    switch(role) {
+        case 'admin':
+            return 'ADMIN123';
+        case 'technician':
+            return 'TECH123';
+        default:
+            return '';
     }
   }
 
@@ -187,7 +197,7 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        {role === 'admin' && (
+        {(role === 'admin' || role === 'technician') && (
           <FormField
             control={form.control}
             name="workCode"
@@ -195,7 +205,7 @@ export function LoginForm() {
               <FormItem>
                 <FormLabel>Work Code</FormLabel>
                 <FormControl>
-                  <Input placeholder="ADMIN123" {...field} />
+                  <Input placeholder={getWorkCodePlaceholder(role)} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -49,6 +49,7 @@ const adminSchema = baseSchema.extend({
 
 const technicianSchema = baseSchema.extend({
   role: z.literal("technician"),
+  workCode: z.string().min(1, { message: "Work code is required." }),
 });
 
 const formSchema = z.discriminatedUnion("role", [studentSchema, staffSchema, adminSchema, technicianSchema])
@@ -147,6 +148,7 @@ export function RegisterForm() {
         return 'studentnumber@tut4life.ac.za';
       case 'staff':
       case 'admin':
+      case 'technician':
         return 'name@outlook.com';
       default:
         return 'name@example.com';
@@ -270,8 +272,8 @@ export function RegisterForm() {
           )}
         />
         
-        {role === 'admin' && (
-            <FormField control={form.control} name="workCode" render={({ field }) => ( <FormItem><FormLabel>Work Code</FormLabel><FormControl><Input placeholder="ADMIN123" {...field} /></FormControl><FormMessage /></FormItem> )} />
+        {(role === 'admin' || role === 'technician') && (
+            <FormField control={form.control} name="workCode" render={({ field }) => ( <FormItem><FormLabel>Work Code</FormLabel><FormControl><Input placeholder={role === 'admin' ? "ADMIN123" : "TECH123"} {...field} /></FormControl><FormMessage /></FormItem> )} />
         )}
 
         {role === 'staff' && (
@@ -287,5 +289,3 @@ export function RegisterForm() {
     </Form>
   );
 }
-
-    
