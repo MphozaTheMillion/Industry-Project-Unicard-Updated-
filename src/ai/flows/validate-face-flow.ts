@@ -25,10 +25,6 @@ const ValidateFaceOutputSchema = z.object({
 });
 export type ValidateFaceOutput = z.infer<typeof ValidateFaceOutputSchema>;
 
-export async function validateFace(input: ValidateFaceInput): Promise<ValidateFaceOutput> {
-  return validateFaceFlow(input);
-}
-
 const prompt = ai.definePrompt({
   name: 'validateFacePrompt',
   input: {schema: ValidateFaceInputSchema},
@@ -56,3 +52,5 @@ const validateFaceFlow = ai.defineFlow(
     return output!;
   }
 );
+
+export const validateFace = validateFaceFlow;
