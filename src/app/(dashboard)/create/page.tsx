@@ -11,7 +11,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CreateCardPage() {
-  const { user, setCardImage } = useAuth();
+  const { user, setCardImage, logout } = useAuth();
   const [imageData, setImageData] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
@@ -25,9 +25,13 @@ export default function CreateCardPage() {
       setCardImage(imageData);
       toast({
         title: "Success!",
-        description: "Your digital card has been saved.",
+        description: "Your digital card has been saved. You will now be logged out.",
       });
-      router.push("/view");
+      // Logout and redirect to login page
+      setTimeout(() => {
+        logout();
+        router.push("/login");
+      }, 2000);
     }
   };
 
@@ -49,7 +53,7 @@ export default function CreateCardPage() {
         </CardHeader>
         <CardContent>
           {!imageData ? (
-            <CameraCapture onPictureTaken={handlePictureTaken} />
+            <CameraCapture onPictureTaken={handlePictureTaken} validationMode={false} />
           ) : (
             <div className="flex flex-col items-center gap-8">
               <DigitalCard user={user} imageSrc={imageData} />

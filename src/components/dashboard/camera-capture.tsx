@@ -9,9 +9,11 @@ import { validateFace } from "@/ai/flows/validate-face-flow";
 
 interface CameraCaptureProps {
   onPictureTaken: (image: string) => void;
+  validationMode?: boolean; // True to validate photo rules, false to just capture
+  captureButtonText?: string;
 }
 
-export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
+export default function CameraCapture({ onPictureTaken, validationMode = true, captureButtonText = "Take Picture" }: CameraCaptureProps) {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [validationError, setValidationError] = useState<string[] | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -63,6 +65,13 @@ export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
         context.scale(-1, 1);
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         const dataUrl = canvas.toDataURL("image/jpeg");
+
+        // If validation is turned off, just pass the picture up.
+        if (!validationMode) {
+          onPictureTaken(dataUrl);
+          setIsProcessing(false);
+          return;
+        }
 
         try {
           const result = await validateFace({ photoDataUri: dataUrl });
@@ -137,9 +146,9 @@ export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
         )}
         <Button onClick={takePicture} size="lg" className="w-full max-w-md" disabled={!hasCameraPermission || isProcessing}>
           {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Camera className="mr-2 h-5 w-5" />}
-          {isProcessing ? 'Processing...' : 'Take Picture'}
+          {isProcessing ? 'Processing...' : captureButtonText}
         </Button>
-       <p className="text-xs text-muted-foreground text-center max-w-md">Please take a professional, forward-facing photo for your ID card. Make sure your eyes are open and your mouth is closed.</p>
+       {validationMode && <p className="text-xs text-muted-foreground text-center max-w-md">Please take a professional, forward-facing photo for your ID card. Make sure your eyes are open and your mouth is closed.</p>}
     </div>
   );
 }

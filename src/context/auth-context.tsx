@@ -54,22 +54,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem("campusIdUser");
       const storedUsers = localStorage.getItem("campusIdUsers");
       
       if (storedUsers) {
         const parsedUsers = JSON.parse(storedUsers);
-        // Add mock technician if not present
-        if (!parsedUsers.some((u: User) => u.role === 'technician')) {
-            const allUsers = [...parsedUsers, ...mockUsers.filter(mu => !parsedUsers.some((pu: User) => pu.email === mu.email))];
-            setUsers(allUsers);
-        } else {
-           setUsers(parsedUsers);
-        }
+        // Add mock users if not present
+        const allUsers = [...parsedUsers, ...mockUsers.filter(mu => !parsedUsers.some((pu: User) => pu.email === mu.email))];
+        setUsers(allUsers);
+        localStorage.setItem("campusIdUsers", JSON.stringify(allUsers));
       } else {
         setUsers(mockUsers);
+        localStorage.setItem("campusIdUsers", JSON.stringify(mockUsers));
       }
 
+      const storedUser = localStorage.getItem("campusIdUser");
       if (storedUser) {
         const loggedInUser = JSON.parse(storedUser);
         setUser(loggedInUser);
@@ -120,6 +118,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    const email = user?.email;
+    if (email) {
+      // Don't clear the card image on logout, just the session user
+      // localStorage.removeItem(`campusIdCardImage_${email}`);
+    }
     setUser(null);
     setCardImageState(null);
     localStorage.removeItem("campusIdUser");
@@ -131,10 +134,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return false; // User already exists
     }
     
-    let userToRegister: User = newUser;
+    let userToRegister: User = newUser as User;
     if (newUser.role === 'admin' || newUser.role === 'technician') {
       const { workCode } = newUser;
-      userToRegister = { ...newUser, workCode };
+      userToRegister = { ...newUser, workCode } as User;
     }
 
 
