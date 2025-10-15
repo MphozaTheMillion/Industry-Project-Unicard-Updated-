@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, RefreshCw } from "lucide-react";
+import { Camera, RefreshCw, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { validateFace } from "@/ai/flows/validate-face-flow";
 
 interface CameraCaptureProps {
   onPictureTaken: (image: string) => void;
@@ -12,6 +13,8 @@ interface CameraCaptureProps {
 
 export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [validationError, setValidationError] = useState<string[] | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
@@ -45,8 +48,10 @@ export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
     }
   }, [toast]);
 
-  const takePicture = () => {
+  const takePicture = async () => {
     if (videoRef.current && canvasRef.current) {
+      setIsProcessing(true);
+      setValidationError(null);
       const video = videoRef.current;
       const canvas = canvasRef.current;
       canvas.width = video.videoWidth;
@@ -58,11 +63,29 @@ export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
         context.scale(-1, 1);
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         const dataUrl = canvas.toDataURL("image/jpeg");
-        onPictureTaken(dataUrl);
 
-        if (video.srcObject) {
-          (video.srcObject as MediaStream).getTracks().forEach((track) => track.stop());
+        try {
+          const result = await validateFace({ photoDataUri: dataUrl });
+          if (result.isValid) {
+            onPictureTaken(dataUrl);
+            if (video.srcObject) {
+              (video.srcObject as MediaStream).getTracks().forEach((track) => track.stop());
+            }
+          } else {
+            setValidationError(result.reasons);
+          }
+        } catch (error) {
+          console.error("Face validation failed:", error);
+          toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: "Could not validate the photo. Please try again.",
+          });
+        } finally {
+          setIsProcessing(false);
         }
+      } else {
+        setIsProcessing(false);
       }
     }
   };
@@ -77,6 +100,12 @@ export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
           muted
           className="w-full h-full object-cover transform scale-x-[-1]"
         />
+        {isProcessing && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 p-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Analyzing photo...</p>
+          </div>
+        )}
         {hasCameraPermission === false && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 p-4">
                 <Alert variant="destructive">
@@ -87,7 +116,7 @@ export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
                 </Alert>
             </div>
         )}
-        {hasCameraPermission === null && (
+        {hasCameraPermission === null && !isProcessing && (
              <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 p-4 text-center text-muted-foreground">
                 <Camera className="mx-auto h-12 w-12 mb-2" />
                 <p>Requesting camera access...</p>
@@ -95,11 +124,22 @@ export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
         )}
       </div>
       <canvas ref={canvasRef} style={{ display: "none" }} />
-        <Button onClick={takePicture} size="lg" className="w-full max-w-md" disabled={!hasCameraPermission}>
-          <Camera className="mr-2 h-5 w-5" />
-          Take Picture
+       {validationError && (
+          <Alert variant="destructive">
+            <AlertTitle>Photo Rejected</AlertTitle>
+            <AlertDescription>
+              Please take a new photo, ensuring the following:
+              <ul className="list-disc pl-5 mt-2">
+                {validationError.map((reason, i) => <li key={i}>{reason}</li>)}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+        <Button onClick={takePicture} size="lg" className="w-full max-w-md" disabled={!hasCameraPermission || isProcessing}>
+          {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Camera className="mr-2 h-5 w-5" />}
+          {isProcessing ? 'Processing...' : 'Take Picture'}
         </Button>
-       <p className="text-xs text-muted-foreground text-center max-w-md">Please take a professional, forward-facing photo for your ID card.</p>
+       <p className="text-xs text-muted-foreground text-center max-w-md">Please take a professional, forward-facing photo for your ID card. Make sure your eyes are open and your mouth is closed.</p>
     </div>
   );
 }
