@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -19,7 +20,7 @@ import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useState } from "react";
 
 export default function AppHeader() {
-  const { user, logout, cardImage } = useAuth();
+  const { user, logout, cardData } = useAuth();
   const router = useRouter();
   const [isSheetOpen, setSheetOpen] = useState(false);
 
@@ -87,7 +88,7 @@ export default function AppHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={user?.role === 'student' || user?.role === 'staff' ? cardImage || '' : ''} alt="User avatar" />
+                  <AvatarImage src={user?.role === 'student' || user?.role === 'staff' ? cardData?.image || '' : ''} alt="User avatar" />
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
               </Button>

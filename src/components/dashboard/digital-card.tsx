@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import type { User } from "@/context/auth-context";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,10 +40,10 @@ export default function DigitalCard({ user, imageSrc }: DigitalCardProps) {
               <Image
                 src={imageSrc || placeholderPhoto?.imageUrl || ''}
                 alt="User photo"
-                layout="fill"
+                fill
                 objectFit="cover"
                 className="rounded-lg border-4 border-white shadow-md"
-                data-ai-hint={imageSrc ? '' : placeholderPhoto?.imageHint}
+                data-ai-hint={imageSrc ? '' : placeholderPhoto?.imageHint || ''}
               />
             </div>
             

@@ -19,6 +19,11 @@ export interface User {
   workCode?: string;
 }
 
+export interface CardData {
+    image: string;
+    createdAt: string;
+}
+
 interface LoginCredentials {
   email: string;
   role: UserRole;
@@ -27,7 +32,7 @@ interface LoginCredentials {
 
 interface AuthContextType {
   user: User | null;
-  cardImage: string | null;
+  cardData: CardData | null;
   login: (credentials: LoginCredentials) => boolean;
   logout: () => void;
   register: (newUser: Omit<User, 'lastLogin'>) => boolean;
@@ -48,7 +53,7 @@ const mockUsers: User[] = [
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [cardImage, setCardImageState] = useState<string | null>(null);
+  const [cardData, setCardDataState] = useState<CardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
 
@@ -71,9 +76,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (storedUser) {
         const loggedInUser = JSON.parse(storedUser);
         setUser(loggedInUser);
-        const storedCardImage = localStorage.getItem(`campusIdCardImage_${loggedInUser.email}`);
-        if (storedCardImage) {
-          setCardImageState(storedCardImage);
+        const storedCardData = localStorage.getItem(`campusIdCardData_${loggedInUser.email}`);
+        if (storedCardData) {
+          setCardDataState(JSON.parse(storedCardData));
         }
       }
     } catch (error) {
@@ -100,11 +105,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userWithLogin);
       localStorage.setItem("campusIdUser", JSON.stringify(userWithLogin));
       
-      const storedCardImage = localStorage.getItem(`campusIdCardImage_${foundUser.email}`);
-      if (storedCardImage) {
-        setCardImageState(storedCardImage);
+      const storedCardData = localStorage.getItem(`campusIdCardData_${foundUser.email}`);
+      if (storedCardData) {
+        setCardDataState(JSON.parse(storedCardData));
       } else {
-        setCardImageState(null); // Reset if no card for this user
+        setCardDataState(null); // Reset if no card for this user
       }
 
       const updatedUsers = users.map(u => u.email === foundUser.email ? userWithLogin : u);
@@ -118,13 +123,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    const email = user?.email;
-    if (email) {
-      // Don't clear the card image on logout, just the session user
-      // localStorage.removeItem(`campusIdCardImage_${email}`);
-    }
     setUser(null);
-    setCardImageState(null);
+    setCardDataState(null);
     localStorage.removeItem("campusIdUser");
   };
 
@@ -149,18 +149,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setCardImage = (image: string | null) => {
     if (user) {
-        setCardImageState(image);
-        const key = `campusIdCardImage_${user.email}`;
+        const key = `campusIdCardData_${user.email}`;
         if (image) {
-          localStorage.setItem(key, image);
+          const newCardData: CardData = {
+              image,
+              createdAt: new Date().toISOString()
+          };
+          setCardDataState(newCardData);
+          localStorage.setItem(key, JSON.stringify(newCardData));
         } else {
+          setCardDataState(null);
           localStorage.removeItem(key);
         }
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, cardImage, login, logout, register, setCardImage, isLoading, users }}>
+    <AuthContext.Provider value={{ user, cardData, login, logout, register, setCardImage, isLoading, users }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,13 +1,15 @@
+
 "use client";
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Link from "next/link";
-import { CreditCard, Eye, ArrowRight } from "lucide-react";
+import { CreditCard, Eye, ArrowRight, AlertCircle } from "lucide-react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { differenceInDays, format } from 'date-fns';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, cardData } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -17,6 +19,14 @@ export default function DashboardPage() {
       router.replace('/technician');
     }
   }, [user, router]);
+
+  const canCreateCard = () => {
+    if (!cardData) return true;
+    const daysSinceCreation = differenceInDays(new Date(), new Date(cardData.createdAt));
+    return daysSinceCreation >= 365;
+  }
+
+  const nextAvailableDate = cardData ? new Date(new Date(cardData.createdAt).setFullYear(new Date(cardData.createdAt).getFullYear() + 1)) : null;
 
   // Render dashboard for student and staff
   if (user?.role !== 'student' && user?.role !== 'staff') {
@@ -38,8 +48,22 @@ export default function DashboardPage() {
         </p>
       </div>
 
+      {!canCreateCard() && nextAvailableDate && (
+         <Card className="mb-6 bg-yellow-50 border-yellow-200">
+            <CardHeader className="flex-row items-center gap-4">
+                <AlertCircle className="w-6 h-6 text-yellow-600" />
+                <div>
+                    <CardTitle className="text-yellow-800">New Card Creation Locked</CardTitle>
+                    <CardDescription className="text-yellow-700">
+                        You can create a new digital card after {format(nextAvailableDate, "MMMM dd, yyyy")}.
+                    </CardDescription>
+                </div>
+            </CardHeader>
+        </Card>
+      )}
+
       <div className="grid gap-6 md:grid-cols-2">
-        <Link href="/create" className="group">
+        <Link href="/create" className={`group ${!canCreateCard() ? 'pointer-events-none opacity-50' : ''}`} aria-disabled={!canCreateCard()}>
           <Card className="hover:border-primary hover:shadow-lg transition-all h-full flex flex-col">
             <CardHeader className="flex-row items-center gap-4">
               <div className="p-3 rounded-md bg-primary/10">

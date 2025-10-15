@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -12,14 +13,13 @@ import { verifyFaceMatch } from "@/ai/flows/verify-face-match-flow";
 import { Loader2 } from "lucide-react";
 
 export default function ViewCardPage() {
-  const { user, cardImage } = useAuth();
+  const { user, cardData } = useAuth();
   const [isVerified, setIsVerified] = useState(false);
-  const [verificationImage, setVerificationImage] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const { toast } = useToast();
 
   const handleVerificationPicture = async (image: string) => {
-    if (!cardImage) {
+    if (!cardData?.image) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -31,7 +31,7 @@ export default function ViewCardPage() {
     setIsVerifying(true);
     try {
       const result = await verifyFaceMatch({
-        savedPhotoDataUri: cardImage,
+        savedPhotoDataUri: cardData.image,
         verificationPhotoDataUri: image,
       });
 
@@ -64,7 +64,7 @@ export default function ViewCardPage() {
     return null; // Or loading state
   }
 
-  if (!cardImage) {
+  if (!cardData) {
     return (
       <div className="container mx-auto">
         <Card className="text-center">
@@ -93,7 +93,7 @@ export default function ViewCardPage() {
             Present this card for verification on campus.
           </p>
         </div>
-        <DigitalCard user={user} imageSrc={cardImage} />
+        <DigitalCard user={user} imageSrc={cardData.image} />
       </div>
     );
   }

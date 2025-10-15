@@ -1,20 +1,39 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CameraCapture from "@/components/dashboard/camera-capture";
 import DigitalCard from "@/components/dashboard/digital-card";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Save, AlertTriangle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { differenceInDays, format } from "date-fns";
 
 export default function CreateCardPage() {
-  const { user, setCardImage, logout } = useAuth();
+  const { user, cardData, setCardImage, logout } = useAuth();
   const [imageData, setImageData] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
+
+  const canCreateCard = () => {
+    if (!cardData) return true;
+    const daysSinceCreation = differenceInDays(new Date(), new Date(cardData.createdAt));
+    return daysSinceCreation >= 365;
+  }
+
+  useEffect(() => {
+    if (user && !canCreateCard()) {
+      router.replace("/dashboard");
+      toast({
+        variant: "destructive",
+        title: "Action Not Allowed",
+        description: "You can only create a new card once per year."
+      })
+    }
+  }, [user, cardData, router, toast]);
 
   const handlePictureTaken = (image: string) => {
     setImageData(image);
@@ -39,7 +58,7 @@ export default function CreateCardPage() {
     setImageData(null);
   };
 
-  if (!user) {
+  if (!user || !canCreateCard()) {
     return null; // or a loading skeleton
   }
 
@@ -53,7 +72,7 @@ export default function CreateCardPage() {
         </CardHeader>
         <CardContent>
           {!imageData ? (
-            <CameraCapture onPictureTaken={handlePictureTaken} validationMode={false} />
+            <CameraCapture onPictureTaken={handlePictureTaken} validationMode={true} />
           ) : (
             <div className="flex flex-col items-center gap-8">
               <DigitalCard user={user} imageSrc={imageData} />
