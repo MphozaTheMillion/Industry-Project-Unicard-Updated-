@@ -56,7 +56,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const storedUser = localStorage.getItem("campusIdUser");
       const storedUsers = localStorage.getItem("campusIdUsers");
-      const storedCardImage = localStorage.getItem("campusIdCardImage");
       
       if (storedUsers) {
         const parsedUsers = JSON.parse(storedUsers);
@@ -72,10 +71,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-      if (storedCardImage) {
-        setCardImageState(storedCardImage);
+        const loggedInUser = JSON.parse(storedUser);
+        setUser(loggedInUser);
+        const storedCardImage = localStorage.getItem(`campusIdCardImage_${loggedInUser.email}`);
+        if (storedCardImage) {
+          setCardImageState(storedCardImage);
+        }
       }
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
@@ -101,6 +102,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userWithLogin);
       localStorage.setItem("campusIdUser", JSON.stringify(userWithLogin));
       
+      const storedCardImage = localStorage.getItem(`campusIdCardImage_${foundUser.email}`);
+      if (storedCardImage) {
+        setCardImageState(storedCardImage);
+      } else {
+        setCardImageState(null); // Reset if no card for this user
+      }
+
       const updatedUsers = users.map(u => u.email === foundUser.email ? userWithLogin : u);
       setUsers(updatedUsers);
       localStorage.setItem("campusIdUsers", JSON.stringify(updatedUsers));
@@ -115,7 +123,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setCardImageState(null);
     localStorage.removeItem("campusIdUser");
-    localStorage.removeItem("campusIdCardImage");
   };
 
   const register = (newUser: Omit<User, 'lastLogin'>) => {
@@ -138,11 +145,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const setCardImage = (image: string | null) => {
-    setCardImageState(image);
-    if (image) {
-      localStorage.setItem("campusIdCardImage", image);
-    } else {
-      localStorage.removeItem("campusIdCardImage");
+    if (user) {
+        setCardImageState(image);
+        const key = `campusIdCardImage_${user.email}`;
+        if (image) {
+          localStorage.setItem(key, image);
+        } else {
+          localStorage.removeItem(key);
+        }
     }
   };
 
