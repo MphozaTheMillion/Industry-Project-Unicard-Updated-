@@ -1,41 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import CameraCapture from "@/components/dashboard/camera-capture";
 import DigitalCard from "@/components/dashboard/digital-card";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, KeyRound } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ArrowLeft, Save } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CreateCardPage() {
   const { user, setCardImage } = useAuth();
   const [imageData, setImageData] = useState<string | null>(null);
-  const [apiKey, setApiKey] = useState("");
-  const [isApiKeySaved, setIsApiKeySaved] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-
-  useEffect(() => {
-    const savedApiKey = localStorage.getItem("geminiApiKey");
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-      setIsApiKeySaved(true);
-    }
-  }, []);
-
-  const handleSaveApiKey = () => {
-    localStorage.setItem("geminiApiKey", apiKey);
-    setIsApiKeySaved(true);
-    toast({
-      title: "API Key Saved",
-      description: "Your Gemini API key has been saved locally.",
-    });
-  };
 
   const handlePictureTaken = (image: string) => {
     setImageData(image);
@@ -69,29 +48,8 @@ export default function CreateCardPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {!isApiKeySaved ? (
-             <div className="flex flex-col items-center gap-4 p-4 border rounded-lg bg-background">
-                <Alert>
-                    <KeyRound className="h-4 w-4" />
-                    <AlertTitle>Gemini API Key Required</AlertTitle>
-                    <AlertDescription>
-                        To use the AI face validation feature, you need to provide a Gemini API key. You can get one from Google AI Studio. This key will be stored securely in your browser's local storage.
-                    </AlertDescription>
-                </Alert>
-               <div className="w-full max-w-md space-y-2">
-                 <Input 
-                   type="password"
-                   placeholder="Enter your Gemini API key"
-                   value={apiKey}
-                   onChange={(e) => setApiKey(e.target.value)}
-                 />
-                 <Button onClick={handleSaveApiKey} className="w-full" disabled={!apiKey}>
-                   Save API Key
-                 </Button>
-               </div>
-             </div>
-          ) : !imageData ? (
-            <CameraCapture onPictureTaken={handlePictureTaken} apiKey={apiKey} />
+          {!imageData ? (
+            <CameraCapture onPictureTaken={handlePictureTaken} />
           ) : (
             <div className="flex flex-col items-center gap-8">
               <DigitalCard user={user} imageSrc={imageData} />

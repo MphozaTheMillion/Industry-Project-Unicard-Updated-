@@ -9,10 +9,9 @@ import { validateFace } from "@/ai/flows/validate-face-flow";
 
 interface CameraCaptureProps {
   onPictureTaken: (image: string) => void;
-  apiKey: string;
 }
 
-export default function CameraCapture({ onPictureTaken, apiKey }: CameraCaptureProps) {
+export default function CameraCapture({ onPictureTaken }: CameraCaptureProps) {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [validationError, setValidationError] = useState<string[] | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -66,7 +65,7 @@ export default function CameraCapture({ onPictureTaken, apiKey }: CameraCaptureP
         const dataUrl = canvas.toDataURL("image/jpeg");
 
         try {
-          const result = await validateFace({ photoDataUri: dataUrl }, { headers: { 'x-google-api-key': apiKey } });
+          const result = await validateFace({ photoDataUri: dataUrl });
           if (result.isValid) {
             onPictureTaken(dataUrl);
             if (video.srcObject) {
@@ -80,7 +79,7 @@ export default function CameraCapture({ onPictureTaken, apiKey }: CameraCaptureP
           toast({
             variant: "destructive",
             title: "Validation Error",
-            description: "Could not validate the photo. Please check your API key and try again.",
+            description: "Could not validate the photo. Please try again.",
           });
         } finally {
           setIsProcessing(false);
