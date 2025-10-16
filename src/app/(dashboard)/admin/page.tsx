@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useMemo } from "react";
 
 export default function AdminDashboardPage() {
   const { users } = useAuth();
@@ -13,6 +14,15 @@ export default function AdminDashboardPage() {
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
   }
+
+  const sortedUsers = useMemo(() => {
+    return [...users].sort((a, b) => {
+      const dateA = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
+      const dateB = b.lastLogin ? new Date(b.lastLogin).getTime() : 0;
+      return dateB - dateA;
+    });
+  }, [users]);
+
 
   return (
     <div className="container mx-auto">
@@ -39,7 +49,7 @@ export default function AdminDashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
+              {sortedUsers.map((user) => (
                 <TableRow key={user.email}>
                   <TableCell>
                     <div className="flex items-center gap-3">
