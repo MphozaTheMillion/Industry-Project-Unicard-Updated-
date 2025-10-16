@@ -63,7 +63,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="capitalize">{user.role}</Badge>
+                    <Badge className="capitalize bg-green-500 hover:bg-green-600 text-white">{user.role}</Badge>
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
