@@ -44,8 +44,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const mockUsers: User[] = [
-    { role: 'student', firstName: 'Jane', lastName: 'Doe', initials: 'JD', email: '123456789@tut4life.ac.za', studentNumber: 'ST123456', courseCode: 'CS101', campusName: 'Main Campus', lastLogin: new Date().toISOString() },
-    { role: 'staff', firstName: 'John', lastName: 'Smith', initials: 'JS', email: 'john.smith@outlook.com', department: 'Computer Science', campusName: 'Main Campus', lastLogin: new Date(Date.now() - 86400000).toISOString() },
     { role: 'admin', firstName: 'Admin', lastName: 'User', initials: 'AU', email: 'admin@outlook.com', campusName: 'Main Campus', workCode: 'ADMIN123', lastLogin: new Date().toISOString() },
     { role: 'technician', firstName: 'Tech', lastName: 'Support', initials: 'TS', email: 'tech@outlook.com', campusName: 'Main Campus', workCode: 'TECH123', lastLogin: new Date(Date.now() - 172800000).toISOString() },
 ];
