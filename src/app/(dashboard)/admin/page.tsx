@@ -67,6 +67,8 @@ export default function AdminDashboardPage() {
                   <TableHead>User</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Campus</TableHead>
+                  <TableHead>Details</TableHead>
                   <TableHead>Last Login</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -81,7 +83,7 @@ export default function AdminDashboardPage() {
                           </Avatar>
                           <div>
                               <p className="font-medium">{user.firstName} {user.lastName}</p>
-                              <p className="text-sm text-muted-foreground">{user.department || user.studentNumber}</p>
+                              <p className="text-sm text-muted-foreground">{user.initials}</p>
                           </div>
                       </div>
                     </TableCell>
@@ -89,6 +91,12 @@ export default function AdminDashboardPage() {
                       <Badge className="capitalize bg-green-500 hover:bg-green-600 text-white">{user.role}</Badge>
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.campusName}</TableCell>
+                    <TableCell>
+                        {user.role === 'student' && `Student No: ${user.studentNumber} / Course: ${user.courseCode}`}
+                        {user.role === 'staff' && `Dept: ${user.department}`}
+                        {(user.role === 'admin' || user.role === 'technician') && `Work Code: ${user.workCode}`}
+                    </TableCell>
                     <TableCell>
                       {user.lastLogin ? `${formatDistanceToNow(new Date(user.lastLogin))} ago` : 'Never'}
                     </TableCell>
