@@ -39,6 +39,7 @@ interface AuthContextType {
   setCardImage: (image: string | null) => void;
   isLoading: boolean;
   users: User[];
+  removeUser: (email: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -162,8 +163,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const removeUser = (email: string) => {
+    const updatedUsers = users.filter(u => u.email !== email);
+    setUsers(updatedUsers);
+    localStorage.setItem("campusIdUsers", JSON.stringify(updatedUsers));
+    localStorage.removeItem(`campusIdCardData_${email}`);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, cardData, login, logout, register, setCardImage, isLoading, users }}>
+    <AuthContext.Provider value={{ user, cardData, login, logout, register, setCardImage, isLoading, users, removeUser }}>
       {children}
     </AuthContext.Provider>
   );
